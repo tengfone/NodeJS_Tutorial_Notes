@@ -1,0 +1,33 @@
+let http = require('http');
+let fs = require('fs');
+
+// Readable Stream. createReadStream inherits from event emitter
+let myReadStream = fs.createReadStream(__dirname + '/toRead.txt',
+    'utf8');
+
+
+// Writable Stream
+let myWriteStream  = fs.createWriteStream(__dirname + '/toWrite.txt');
+
+// Adding an event listener, reading and writing in chunks
+myReadStream.on('data',function(chunk){
+    console.log('new chunk received: ');
+    console.log(chunk);
+    myWriteStream.write(chunk);
+});
+
+// Piping, shortcut. no need use event listener
+myReadStream.pipe(myWriteStream);
+
+// Piping on a server
+let server = http.createServer(function(req,res){
+    // writeHead is like an introduction of yourself before entering into the client
+    res.writeHead(200,{'Content-Type':'text/plain'});
+    // reading the text file in chunks
+    let myReadStream = fs.createReadStream(__dirname + '/readMe.txt','utf8');
+    // taking that read stream and pipeline to the response stream
+    myReadStream.pipe(res);
+});
+
+server.listen(3000,'127.0.0.1');
+console.log('Listening on port 3000');
